@@ -1,21 +1,12 @@
-/*
- * Just the class to load Quake 2 .MD2 and PCX files in OpenGL/GLUT.
- *
- *
- * Needs A LOT OF refactoring and cleaning!
- *
- *
- */
 #include <cstdlib>
 #include <stdio.h>
 #include <string.h>
-//#include <GL/gl.h>
-//#include <GL/glu.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <cmath>
 
 #include <GL/glew.h>
@@ -24,6 +15,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "common/texture.hpp"
 #include "model.h"
+
+using namespace std;
 
 Animation Model_MD2::anim_list[ 21 ] = {
     // first, last, fps
@@ -56,6 +49,9 @@ Model_MD2::Model_MD2() {
         Faces_Triangles[i] = new float[14096];
         Faces_Textures[i] = new float[14096];
     }
+    cur_trinagles = vector<float>(14096);
+    cur_uv = vector<float>(14096);
+
 
     glGenBuffers(1, &vertexbuffer);
     glGenBuffers(1, &uvbuffer);
@@ -197,7 +193,10 @@ void Model_MD2::Do(AnimationType new_animation)
     if (animation != new_animation) {
         animation = new_animation;
         framenr = 0;
-        copy(Faces_Triangles[startFrame(animation)]);
+
+        copy(Faces_Triangles[startFrame(animation)], Faces_Triangles[startFrame(animation)] + TotalConnectedTriangles * 3, cur_trinagles.begin());
+        copy(Faces_Textures[startFrame(animation)], Faces_Textures[startFrame(animation)] + TotalConnectedTriangles * 2, cur_uv.begin());
+        //copy(Faces_Triangles[startFrame(animation)]);
     }
 }
 
@@ -208,7 +207,7 @@ void Model_MD2::Draw()
     glBufferData(GL_ARRAY_BUFFER, TotalConnectedTriangles * 3 * sizeof(float), &cur_trinagles[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-    glBufferData(GL_ARRAY_BUFFER, TotalConnectedTriangles * 2 * sizeof(float), Faces_Textures[global_framenr], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, TotalConnectedTriangles * 2 * sizeof(float), &cur_uv[0], GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -251,22 +250,21 @@ void Model_MD2::Draw()
 }
 
 
-void Model_MD2::process_animation()
-{
+void Model_MD2::process_animation() {
     static clock_t last_frame_time = clock();
     clock_t current_time = clock();
     float ratio = (current_time - last_frame_time) / (float)frame_change_interval;
+
     int cur_frame = framenr + startFrame(animation);
     int next_frame = getNextFramenr() + startFrame(animation);
+
+    interpolate(cur_trinagles, Faces_Triangles[cur_frame], Faces_Triangles[next_frame], TotalConnectedTriangles * 3, ratio);
+    interpolate(cur_uv, Faces_Textures[cur_frame], Faces_Textures[next_frame], TotalConnectedTriangles * 2, ratio);
 
     if (ratio >= 1) {
         last_frame_time = current_time;
         framenr = getNextFramenr();
-        copy(Faces_Triangles[next_frame]);
-    } else {
-        interpolate(ratio, Faces_Triangles[cur_frame], Faces_Triangles[next_frame]);
     }
-
 }
 
 int Model_MD2::startFrame(Model_MD2::AnimationType animation) {
@@ -276,29 +274,21 @@ int Model_MD2::startFrame(Model_MD2::AnimationType animation) {
 int Model_MD2::animationLength(Model_MD2::AnimationType animation) {
     return anim_list[animation].last_frame - anim_list[animation].first_frame;
 }
-
-void Model_MD2::copy(float *src)
-{
-    cur_trinagles.clear();
-    for (int i = 0; i < TotalConnectedTriangles * 3; i += 3) {
-        cur_trinagles.push_back(vec3(src[i], src[i+1], src[i+2]));
+/*
+void Model_MD2::copy(float *src) {
+    for (int i = 0; i < TotalConnectedTriangles * 3; ++i) {
+        cur_trinagles.push_back(src[i]);
     }
-
 }
-
-void Model_MD2::interpolate(float ratio, float *cur_frame, float *next_frame)
-{
-    cur_trinagles.clear();
+*/
+void Model_MD2::interpolate(vector<float>& dest, float *cur_frame, float *next_frame, int size, float ratio) {
     float p = ratio;
     float q = 1 - p;
-    for (int i = 0; i < TotalConnectedTriangles * 3; i = i+3) {
-        vec3 cur (cur_frame[i], cur_frame[i+1], cur_frame[i+2]);
-        vec3 next (next_frame[i], next_frame[i+1], next_frame[i+2]);
-        cur_trinagles.push_back(q * cur + p * next);
+    for (int i = 0; i < size; ++i) {
+        dest[i] = q * cur_frame[i] + p * next_frame[i];
     }
 }
 
-int Model_MD2::getNextFramenr()
-{
+int Model_MD2::getNextFramenr() {
     return (framenr + 1) % (animationLength(animation) + 1);
 }

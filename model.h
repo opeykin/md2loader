@@ -35,13 +35,6 @@ public:
         MAX_ANIMATIONS
     };
 
-    typedef glm::vec3 vec3;
-    typedef glm::vec2 vec2;
-    typedef std::vector<vec3> Triangles;
-    typedef std::vector<vec2> UV;
-
-    //enum ANIMATION {STAND = 0, RUN, ATTACK, PAIN1, PAIN2, PAIN3 };
-
     Model_MD2();
     int Load(const char *filename, const char* textureFilename);
     void Do(AnimationType new_animation);
@@ -52,13 +45,14 @@ private:
     int startFrame(AnimationType animation);
     int animationLength(AnimationType animation);
     int getNextFramenr();
-    void copy(float* src);
-    void interpolate(float ratio, float* cur_frame, float* next_frame);
+    //void copy(float* src);
+    void interpolate(std::vector<float>& dest, float *cur_frame, float *next_frame, int size, float ratio);
 
     GLuint vertexbuffer;
     GLuint uvbuffer;
     GLuint	texturen;
-    Triangles cur_trinagles;
+    std::vector<float> cur_trinagles;
+    std::vector<float> cur_uv;
 
     float* Faces_Triangles[512];
     float* Faces_Textures[512];
@@ -68,8 +62,6 @@ private:
     int framenr;
     static const clock_t frame_change_interval = 150000;
 
-//    int frame_length[11];
- //   int frame_start[6];
     static Animation anim_list[21];
 };
 
