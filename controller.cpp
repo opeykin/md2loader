@@ -62,6 +62,30 @@ void Controller::process() {
         new_animation = true;
     }
 
+    if(glfwGetKey(49) == GLFW_PRESS) { // space
+        animation = Model_MD2::ATTACK;
+        new_animation = true;
+    }
+
+    if(glfwGetKey(50) == GLFW_PRESS) { // space
+        animation = Model_MD2::SALUTE;
+        new_animation = true;
+    }
+    if(glfwGetKey(51) == GLFW_PRESS) { // space
+        animation = Model_MD2::WAVE;
+        new_animation = true;
+    }
+
+    if(glfwGetKey(52) == GLFW_PRESS) { // space
+        animation = Model_MD2::POINT;
+        new_animation = true;
+    }
+
+    if(glfwGetKey(53) == GLFW_PRESS) { // space
+        animation = Model_MD2::BOOM;
+        new_animation = true;
+    }
+
     if (glfwGetKey(81) == GLFW_PRESS) {
         is_sitting = true;
         animation = Model_MD2::CROUCH_STAND;
