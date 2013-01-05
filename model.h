@@ -41,7 +41,10 @@ public:
     int Load(const char *filename, const char* textureFilename);
     void Do(AnimationType new_animation, bool repeat = false, AnimationType return_animation = STAND);
     void Draw();
-    void process_animation();
+    void processAnimation();
+    AnimationType getCurrentAnimation() const  {
+        return animation;
+    }
 
 private:
     int startFrame(AnimationType animation);

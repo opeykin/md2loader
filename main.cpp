@@ -136,7 +136,7 @@ int main( void )
 
 
         controller.process();
-        model.process_animation();
+        model.processAnimation();
         model.Draw();
         glfwSwapBuffers();
 

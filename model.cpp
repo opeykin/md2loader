@@ -199,9 +199,7 @@ void Model_MD2::Do(AnimationType new_animation, bool repeat, AnimationType retur
     next_animation = return_animation;
 }
 
-void Model_MD2::Draw()
-{
-    int global_framenr = framenr + startFrame(animation);
+void Model_MD2::Draw() {
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, TotalConnectedTriangles * 3 * sizeof(float), &cur_trinagles[0], GL_STATIC_DRAW);
 
@@ -222,34 +220,10 @@ void Model_MD2::Draw()
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
-
-
-
-
-
-    /*
-    glEnable(GL_TEXTURE_2D);
-
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-    glNormalPointer(GL_FLOAT, 0, Normals);
-
-    glTexCoordPointer(2,GL_FLOAT,0, this->Faces_Textures[ framenr] );
-    glVertexPointer(3,GL_FLOAT,	0,Faces_Triangles[ framenr ]);
-    glDrawArrays(GL_TRIANGLES, 0, TotalConnectedTriangles);
-
-    glDisableClientState(GL_NORMAL_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-
-    glDisable(GL_TEXTURE_2D);
-*/
 }
 
 
-void Model_MD2::process_animation() {
+void Model_MD2::processAnimation() {
     static clock_t last_frame_time = clock();
     clock_t current_time = clock();
     float ratio = (current_time - last_frame_time) / (float)frame_change_interval;

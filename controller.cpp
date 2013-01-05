@@ -22,14 +22,14 @@ Controller::Controller(Model_MD2& model)
 }
 
 glm::core::type::mat4 Controller::getModelMatrix() {
-    //glm::mat4 rotation = glm::rotate(initial_rotation, direction, glm::vec3(0.0f, 0.0f, -1.0f));
-    //return glm::translate(rotation, position);
-    //glm::mat4 translation = glm::translate(initial_rotation, glm::vec3(100, 100, 100));
     glm::mat4 translation = glm::translate(initial_rotation, position);
     return glm::rotate(translation, direction_in_degree, glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 void Controller::process() {
+    Model_MD2::AnimationType animation = Model_MD2::STAND;
+    bool new_animation = false;
+
     if(glfwGetKey(68) == GLFW_PRESS) { // d
         direction_in_degree -= ROTATION_SPEED;
     }
@@ -38,34 +38,53 @@ void Controller::process() {
         direction_in_degree += ROTATION_SPEED;
     }
 
-    if (is_moving) {
-        float angle = direction_in_degree * 3.14 / 180;
-        //cout << "angle: " << angle << " cos: " << cos(angle) << " sin: " << sin(angle) << endl;
-        glm::vec3 shift = glm::vec3(cos(angle), sin(angle), 0) * MOVING_SPEED;
-        position = position + shift;
-    }
-
-    if(glfwGetKey(69) == GLFW_PRESS && !is_moving) { // e
-       model.Do(Model_MD2::FLIP);
-    }
-
-    if(glfwGetKey(87) == GLFW_PRESS) { // w
-        if (!is_moving) {
-           is_moving = true;
-           model.Do(Model_MD2::RUN, true);
-        }
+    if (glfwGetKey(87) == GLFW_PRESS) {
+        is_moving = true;
     } else {
         if (is_moving) {
-            is_moving = false;
-            model.Do(Model_MD2::STAND);
+            new_animation = true;
+            if (is_sitting) {
+                animation = Model_MD2::CROUCH_STAND;
+            } else {
+                animation = Model_MD2::STAND;
+            }
         }
+        is_moving = false;
+    }
+
+    if(glfwGetKey(69) == GLFW_PRESS) { // e
+        animation = Model_MD2::FLIP;
+        new_animation = true;
     }
 
     if(glfwGetKey(32) == GLFW_PRESS) { // space
-        if (is_moving) {
-            model.Do(Model_MD2::JUMP, false, Model_MD2::RUN);
-        } else {
-            model.Do(Model_MD2::JUMP, false, Model_MD2::STAND);
-        }
+        animation = Model_MD2::JUMP;
+        new_animation = true;
     }
+
+    if (glfwGetKey(81) == GLFW_PRESS) {
+        is_sitting = true;
+        animation = Model_MD2::CROUCH_STAND;
+        new_animation = true;
+    } else {
+        is_sitting = false;
+    }
+
+    if (is_moving) {
+        float radians = direction_in_degree * 3.14 / 180;
+        if (is_sitting) {
+            model.Do(Model_MD2::CROUCH_WALK, true);
+            move(radians, CR_SPEED);
+        } else {
+            model.Do(Model_MD2::RUN, true);
+            move(radians, RUNING_SPEED);
+        }
+    } else if (new_animation) {
+        model.Do(animation);
+    }
+}
+
+void Controller::move(float radians, float speed) {
+    glm::vec3 shift = glm::vec3(cos(radians), sin(radians), 0) * speed;
+    position = position + shift;
 }
