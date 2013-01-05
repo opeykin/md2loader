@@ -61,7 +61,9 @@ Model_MD2::Model_MD2() {
     glBindVertexArray(VertexArrayID);
 
     framenr = 0;
+    repeat_animation = true;
     animation = STAND;
+    next_animation = STAND;
 /*
     frame_length[0] = 39;	// stand
     frame_length[1] = 5;	// run
@@ -187,17 +189,14 @@ int Model_MD2::Load(const char* filename, const char* textureFilename) {
     return 0;
 }
 
-
-void Model_MD2::Do(AnimationType new_animation)
-{
+void Model_MD2::Do(AnimationType new_animation, bool repeat, AnimationType return_animation) {
     if (animation != new_animation) {
         animation = new_animation;
         framenr = 0;
-
-        copy(Faces_Triangles[startFrame(animation)], Faces_Triangles[startFrame(animation)] + TotalConnectedTriangles * 3, cur_trinagles.begin());
-        copy(Faces_Textures[startFrame(animation)], Faces_Textures[startFrame(animation)] + TotalConnectedTriangles * 2, cur_uv.begin());
-        //copy(Faces_Triangles[startFrame(animation)]);
     }
+
+    repeat_animation = repeat;
+    next_animation = return_animation;
 }
 
 void Model_MD2::Draw()
@@ -256,12 +255,21 @@ void Model_MD2::process_animation() {
     float ratio = (current_time - last_frame_time) / (float)frame_change_interval;
 
     int cur_frame = framenr + startFrame(animation);
-    int next_frame = getNextFramenr() + startFrame(animation);
+    int next_frame;
+    if (getNextFramenr() == 0 & !repeat_animation) {
+        next_frame = startFrame(next_animation);
+    } else {
+        next_frame = getNextFramenr() + startFrame(animation);
+    }
 
     interpolate(cur_trinagles, Faces_Triangles[cur_frame], Faces_Triangles[next_frame], TotalConnectedTriangles * 3, ratio);
     interpolate(cur_uv, Faces_Textures[cur_frame], Faces_Textures[next_frame], TotalConnectedTriangles * 2, ratio);
 
     if (ratio >= 1) {
+        if (getNextFramenr() == 0 & !repeat_animation) {
+            animation = next_animation;
+            repeat_animation = true;
+        }
         last_frame_time = current_time;
         framenr = getNextFramenr();
     }
@@ -274,13 +282,7 @@ int Model_MD2::startFrame(Model_MD2::AnimationType animation) {
 int Model_MD2::animationLength(Model_MD2::AnimationType animation) {
     return anim_list[animation].last_frame - anim_list[animation].first_frame;
 }
-/*
-void Model_MD2::copy(float *src) {
-    for (int i = 0; i < TotalConnectedTriangles * 3; ++i) {
-        cur_trinagles.push_back(src[i]);
-    }
-}
-*/
+
 void Model_MD2::interpolate(vector<float>& dest, float *cur_frame, float *next_frame, int size, float ratio) {
     float p = ratio;
     float q = 1 - p;

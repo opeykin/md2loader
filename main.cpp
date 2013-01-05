@@ -23,6 +23,7 @@ using namespace glm;
 #include "common/texture.hpp"
 
 #include "model.h"
+#include "controller.h"
 
 using std::cout;
 using std::endl;
@@ -76,6 +77,7 @@ int main( void )
     glUseProgram(programID);
 
     Model_MD2 model;
+    Controller controller(model);
     model.Do(Model_MD2::STAND);
 
     cout << "created\n";
@@ -93,7 +95,8 @@ int main( void )
         glm::mat4 ProjectionMatrix = getProjectionMatrix();
         glm::mat4 ViewMatrix = getViewMatrix();
         glm::mat4 ModelMatrix = glm::mat4(1.0);
-        ModelMatrix = glm::rotate(ModelMatrix, 90.0f, glm::vec3(-1.0f, 0.0f, 0.0f));
+        //ModelMatrix = glm::rotate(ModelMatrix, 90.0f, glm::vec3(-1.0f, 0.0f, 0.0f));
+        ModelMatrix = controller.getModelMatrix();
         glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
         glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
@@ -132,7 +135,7 @@ int main( void )
         //glDisableVertexAttribArray(0);
 
 
-
+        controller.process();
         model.process_animation();
         model.Draw();
         glfwSwapBuffers();

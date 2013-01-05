@@ -18,7 +18,7 @@ glm::mat4 getProjectionMatrix() {
 }
 
 const glm::vec3 direction (0, 0, 0);
-float distance = 100;
+float distance = 120;
 float horizontalAngle = 0.0f;
 float verticalAngle = 0.0f;
 float initialFoV = 45.0f;

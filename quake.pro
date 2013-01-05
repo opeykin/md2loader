@@ -6,7 +6,8 @@ SOURCES += \
     common/controls.cpp \
     common/sphere.cpp \
     common/texture.cpp \
-    model.cpp
+    model.cpp \
+    controller.cpp
 
 HEADERS += \
     common/shader.hpp \
@@ -15,7 +16,8 @@ HEADERS += \
     common/sphere.h \
     common/texture.hpp \
     model.h \
-    md2_utils.h
+    md2_utils.h \
+    controller.h
 
 OTHER_FILES += \
     fragmentshader \

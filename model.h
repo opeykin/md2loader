@@ -1,6 +1,8 @@
 #ifndef MODEL_HP
 #define MODEL_HP
 
+#include <GL/glew.h>
+#include <GL/glfw.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <ctime>
@@ -37,7 +39,7 @@ public:
 
     Model_MD2();
     int Load(const char *filename, const char* textureFilename);
-    void Do(AnimationType new_animation);
+    void Do(AnimationType new_animation, bool repeat = false, AnimationType return_animation = STAND);
     void Draw();
     void process_animation();
 
@@ -59,6 +61,8 @@ private:
     int TotalConnectedTriangles;
 
     AnimationType animation;
+    AnimationType next_animation;
+    bool repeat_animation;
     int framenr;
     static const clock_t frame_change_interval = 150000;
 
